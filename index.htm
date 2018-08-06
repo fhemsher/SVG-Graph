@@ -1,0 +1,1053 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+    <title>Place Graphs in your Web Page</title>
+    <script type="text/javascript" src="highlight.pack.js"></script>
+    <script type="text/javascript" src="highlightCode.js"></script>
+    <script charset="UTF-8" type="text/javascript" src="d3.v4.min.js"></script>
+    <link href='highlight.css' rel='stylesheet' />
+</head>
+
+<body style=font-family:arial; onload=writeEM();writeGraphColorSelection();createData()>
+    <center>
+        <b>Place Graph in your Web Page</b>
+        <br>
+        <img src="graph.png" alt="" width="651" height="477" />
+        <div style=width:60%;text-align:left;>
+            <center><i>This creates the SVG source of a graph for placement into any web page.</i></center>
+<div style=background:lightblue;padding:8px;>
+Include the data via CSV format, or a JSON object.
+ <br>
+The <b>CSV</b> (comma separated values) header values are: <i>xData,yData</i><br>
+Each <b>JSON</b> data point has the format: <i>{xData:"my x data value",yData:"my y data value"}</i>
+
+</div>
+The X-axis values can be numeric or in a date/time format. If the X-axis is a time line, select the desired date's format.
+        </div>
+    </center>
+    <center>
+        <TABLE>
+            <TR>
+                <TD>
+<table style='border:1px solid black;width:330px;'>
+
+
+
+<tr>
+<td align=left >
+    Title:<input id=drawGraphTitleValue type="text" style=font-weight:bold;width:230px value="My Graph Title" /><br>
+    X-axis Name:<input  id=drawGraphXaxisValue type="text" style=width:80px  value="X Axis Name"  /><br>
+    Y-axis Name:<input  id=drawGraphYaxisValue type="text" style=width:80px value="Y Axis Name"  />
+
+</td>
+</tr>
+
+<tr>
+<td align=center >Graph Stroke <span  id=drawGraphStrokeBg >Color:</span>
+<select  title="Stroke Color" onChange=showDrawGraphStrokeBg() id=drawGraphStrokeSelect></select>
+width:
+  <select onChange=drawGraphStrokeWidthSelected() id=drawGraphStrokeWidthSelect>
+        <option >0.5</option>
+        <option >1</option>
+        <option selected>2</option>
+        <option >3</option>
+        <option >4</option>
+        <option >5</option>
+        <option >6</option>
+        <option >7</option>
+        <option >8</option>
+        <option >9</option>
+        <option >10</option>
+        <option >15</option>
+        <option >20</option>
+        <option >25</option>
+        <option >30</option>
+        </select><br/>
+</td>
+</tr>
+<tr>
+<td align=center >Graph Fill <span id=drawGraphFillBg >Color:</span>
+<select  title="Graph Fill Color" onChange=showDrawGraphFillBg() id=drawGraphFillSelect></select>
+Opacity:
+  <select onChange=drawGraphOpacitySelected() id=drawGraphOpacitySelect>
+        <option >0.1</option>
+        <option>0.2</option>
+        <option >0.3</option>
+        <option >0.4</option>
+        <option>0.5</option>
+        <option >0.6</option>
+        <option >0.7</option>
+        <option >0.8</option>
+        <option >0.9</option>
+        <option  selected >1.0</option>
+
+        </select>
+
+</td>
+</tr>
+
+
+<tr align=center>
+<td>
+X-Axis Date Format:<input id=drawGraphTimeFormatCheck onclick=drawGraphTimeFormatChecked() type="checkbox" />
+<br><select disabled id=drawGraphDateFormatSelect onchange=drawGraphDateFormatSelected()>
+<option >Select Date Format</option>
+<option value=iso1 >YYYY-MM-DD</option>
+<option value=iso2 >YYYY/MM/DD hh:mm:ss</option>
+<option value=iso3 >YYYY-MM-DDThh:mm</option>
+<option value=mdy >MM/DD/YYYY</option>
+<option value=mdyhm>MM/DD/YYYY hh:mm</option>
+<option value=mdyhms >MM/DD/YYYY hh:mm:ss</option>
+<option value=hms >hh:mm:ss</option>
+<option value=ms >mm:ss</option>
+</select>
+<div id=drawGraphDateFormatDiv></div>
+<br><br>
+ Add Data Values<br>
+<button title="Use csv data format" id=drawGraphCSVButton onclick=drawGraphCSVButtonClicked()>CSV Data</button>
+<button title="Use JSON data format"  id=drawGraphJSONButton onclick=drawGraphJSONButtonClicked()>JSON Data</button>
+
+
+<div style='color:black;background:lightblue;width:330px;height:160px;overflow-y:scroll'>
+
+   <textarea onClick=resetError() placeholder="Paste CSV/JSON data here..." id=drawGraphDataValue style='background:lightblue;width:300px;height:160px;border-width:0px;display:none;'></textarea>
+
+
+
+   </div>
+
+  <span id=validDataSpan > After data is inserted, click the button below to publish the graph</span>
+ <br> <button onclick=publishGraph() >Publish</button>
+</td>
+</tr>
+
+
+<tr>
+<td align=center >
+    Scale: <input  onmousedown="ScaleGraph=true" onmouseup="ScaleGraph=false" onmousemove="scaleGraph(this.value)" id=scaleRangeValue style=width:220px type="range" value=1  min=".1" step=.05 max="1"> <input style=width:40px id=scaleValue type="text" value=1.0 />
+</td>
+</tr>
+
+</table>
+</TD>
+                <TD>
+                    <div id=svgDiv style='background:lightblue;width:700px;height:500px;border:1px solid black'>
+                        <svg id=mySVG width=700 height=500>
+                            <svg id=wrapper ></svg>
+                        </svg>
+                    </div>
+                </TD>
+            </TR>
+        </TABLE>
+        To publish the pie chart into your web page, copy/paste SVG source below, or save as .svg file<br>
+        <div id=svgPublishDiv style=background:lightblue;text-align:left;width:90%;height:200px;overflow-y:scroll></div>
+        <table>
+            <tr>
+                <td>
+                    <nobr>Save SVG As:</nobr>
+                </td>
+                <td><input id="inputFileNameToSaveAs" placeholder="Include your fileName.svg"></input>
+                </td>
+                <td><button Title="Save current drawing to your computer" onclick="saveSvgAsFile()">save</button></td>
+            </tr>
+        </table>
+        <p></p>
+        <div id=emDiv style='width:100%'></div>
+        <p></p>
+    </center>
+    <textarea name="" id="myValue" style=width:300px;;height:400px;></textarea>
+<script>
+var DataType
+function drawGraphCSVButtonClicked()
+{
+
+
+    validDataSpan.innerHTML = "After data is inserted, click the button below to publish the graph"
+    validDataSpan.style.color = ""
+    drawGraphDataValue.style.display = ""
+    drawGraphDataValue.placeholder = 'Paste CSV Data here...\n\n'+
+    'xData,yData\n'+
+    'xdata 1,ydata 1\n'+
+    'xdata 2,ydata 2\n'+
+    'xdata 3,ydata 3\n'+
+    '...'
+    DataType = "CSV"
+}
+function drawGraphJSONButtonClicked()
+{
+
+    validDataSpan.innerHTML = "After data is inserted, click the button below to publish the graph"
+    validDataSpan.style.color = ""
+
+         drawGraphDataValue.style.display = ""
+
+    drawGraphDataValue.placeholder = 'Paste JSON Data here...\n\n'+
+    '[\n{xData:"xdata 1",yData:"ydata 1"},{xData:"xdata 2",yData:"ydata 2"},{xData:"xdata 3",yData:"ydata 3"},\n...\n]'
+
+    DataType = "JSON"
+
+}
+
+function resetError()
+{
+
+    validDataSpan.innerHTML = "After data is inserted, click the button below to publish the graph"
+    validDataSpan.style.color = ""
+
+}
+
+
+var DrawGraphTimeFormat = false
+function drawGraphTimeFormatChecked()
+{
+
+    if(drawGraphTimeFormatCheck.checked)
+    {
+        drawGraphDateFormatSelect.disabled = false
+        DrawGraphTimeFormat = true
+    }
+    else
+    {
+        drawGraphDateFormatSelect.disabled = true
+        DrawGraphTimeFormat = false
+        drawGraphDateFormatSelectedIndex = 0
+        drawGraphDateFormatDiv.innerHTML = ''
+    }
+
+}
+var ScaleGraph = false
+function scaleGraph(value)
+{
+    
+    if(ScaleGraph)
+    {
+
+        scaleValue.value = value
+
+            var currentMatrix = domGraphG.getCTM()
+
+            var matrix = mySVG.createSVGMatrix();
+            matrix.a = 1
+            matrix.b = 0
+            matrix.c = 0
+            matrix.d = 1
+            matrix.e = currentMatrix.e
+            matrix.f = currentMatrix.f
+
+            var m2s = matrix.a+","+matrix.b+","+matrix.c+","+matrix.d+","+matrix.e+","+matrix.f
+            domGraphG.setAttribute("transform", "matrix("+m2s+")")
+            domGraphG.setAttribute("scale",value)
+            var transformRequest = mySVG.createSVGTransform()
+            //---attach new or existing transform to element, init its transform list---
+            var myTransListAnim = domGraphG.transform
+            var transList = myTransListAnim.baseVal
+
+            transformRequest.setScale(value, value)
+            transList.appendItem(transformRequest)
+            transList.consolidate()
+
+         showPublishSVG()
+    }
+
+}
+function drawGraphDateFormatSelected()
+{
+    
+
+    var iso1 = d3.timeFormat("%Y-%m-%d");
+    var iso2 = d3.timeFormat("%Y/%m/%d %H:%M:%S");
+    var iso3 = d3.timeFormat("%Y-%m-%dT%H:%M");
+
+    //---typical U.S. times---
+    var mdy = d3.timeFormat("%m/%d/%Y")
+    var mdyhm = d3.timeFormat("%m/%d/%Y %H:%M")
+    var mdyhms = d3.timeFormat("%m/%d/%Y %H:%M:%S")
+    var hms = d3.timeFormat("%H:%M:%S")
+    var ms = d3.timeFormat("%M:%S")
+    var selIndex = drawGraphDateFormatSelect.selectedIndex
+
+    //---show example of this date format---
+    var date = new Date()
+    if(selIndex==1)
+        var now = iso1(date)
+        else if(selIndex==2)
+            var now = iso2(date)
+            else if(selIndex==3)
+                var now = iso3(date)
+                else if(selIndex==4)
+                    var now = mdy(date)
+                    else if(selIndex==5)
+                        var now = mdyhm(date)
+                        else if(selIndex==6)
+                            var now = mdyhms(date)
+                            else if(selIndex==7)
+                                var now = hms(date)
+                                else if(selIndex==8)
+                                    var now = ms(date)
+
+                                    drawGraphDateFormatDiv.innerHTML = now
+
+}
+
+
+
+
+var ParseTime = false
+var DateFormat = false
+var GraphData =[]
+var FinishedData =[]
+function publishGraph()
+{
+    
+       if(document.getElementById("domGraphG"))
+       {
+         mySVG.removeChild(domGraphG)
+          scaleRangeValue.value =1
+          scaleValue.value =1
+       }
+
+
+
+        if(drawGraphDateFormatSelect.selectedIndex!=0)
+        {
+
+            var iso1 = d3.timeParse("%Y-%m-%d");
+            var iso2 = d3.timeParse("%Y/%m/%d %H:%M:%S");
+            var iso3 = d3.timeParse("%Y-%m-%dT%H:%M");
+
+            //---typical U.S. times---
+            var mdy = d3.timeParse("%m/%d/%Y")
+            var mdyhm = d3.timeParse("%m/%d/%Y %H:%M")
+            var mdyhms = d3.timeParse("%m/%d/%Y %H:%M:%S")
+            var hms = d3.timeFormat("%H:%M:%S")
+            var ms = d3.timeFormat("%M:%S")
+
+            var selIndex = drawGraphDateFormatSelect.selectedIndex
+
+            if(selIndex==1)
+            {
+                ParseTime = iso1
+                DateFormat = d3.timeFormat("%Y-%m-%d");
+            }
+
+            else if(selIndex==2)
+            {
+                ParseTime = iso2
+                DateFormat = d3.timeFormat("%Y/%m/%d %H:%M:%S");
+            }
+
+            else if(selIndex==3)
+            {
+                ParseTime = iso3
+                DateFormat = d3.timeFormat("%Y-%m-%dT%H:%M");
+
+            }
+
+            else if(selIndex==4)
+            {
+                ParseTime = mdy
+                DateFormat = d3.timeFormat("%m/%d/%Y")
+            }
+
+            else if(selIndex==5)
+            {
+                ParseTime = mdyhm
+                DateFormat = d3.timeFormat("%m/%d/%Y %H:%M")
+            }
+
+            else if(selIndex==6)
+            {
+                ParseTime = mdyhms
+                DateFormat = d3.timeFormat("%m/%d/%Y %H:%M:%S")
+            }
+            else if(selIndex==7)
+            {
+                ParseTime = hms
+                DateFormat = d3.timeFormat("%H:%M:%S")
+            }
+            else if(selIndex==8)
+            {
+                ParseTime = ms
+                DateFormat = d3.timeFormat("%M:%S")
+            }
+
+        }
+        else
+            DateFormat = false
+
+            var title = drawGraphTitleValue.value
+            var xAxisName = drawGraphXaxisValue.value
+            var yAxisName = drawGraphYaxisValue.value
+        if(title!=""&&xAxisName!=""&&yAxisName!="")
+        {
+            var scale = scaleRangeValue.value
+
+            var stroke = drawGraphStrokeSelect.options[drawGraphStrokeSelect.selectedIndex].value
+            var strokeWidth = drawGraphStrokeWidthSelect.options[drawGraphStrokeWidthSelect.selectedIndex].text
+            var fill = drawGraphFillSelect.options[drawGraphFillSelect.selectedIndex].value
+            var fillOpacity = drawGraphOpacitySelect.options[drawGraphOpacitySelect.selectedIndex].text
+            GraphData =[]
+            FinishedData =[]
+
+            drawGraphTitleValue.disabled = true
+            drawGraphXaxisValue.disabled = true
+            drawGraphYaxisValue.disabled = true
+            drawGraphTimeFormatCheck.disabled = true
+            drawGraphDateFormatSelect.disabled = true
+            drawGraphCSVButton.disabled = true
+            drawGraphJSONButton.disabled = true
+
+
+
+            if(DataType=="JSON")
+            {
+                var jsonObj = eval(drawGraphDataValue.value)
+
+                if(jsonObj.length>2)
+                {
+                    for(var k = 0; k<jsonObj.length; k++)
+                    {
+                        var xData = jsonObj[k].xData
+                        var yData = jsonObj[k].yData
+
+                        if(!DateFormat)
+                            xData = +xData
+
+                            GraphData.push(
+                                {
+                                xData: xData, yData: yData
+                                }
+                            )
+                            FinishedData.push(
+                                {
+                                xData: xData, yData: yData
+                                }
+                            ) //---attach to finishedElem----
+                    }
+                }
+                else
+                {
+                    validDataSpan.innerHTML = "***JSON format error***"
+                    validDataSpan.style.color = "red"
+
+                }
+
+            }
+            if(DataType=="CSV")
+            {
+                var csv = drawGraphDataValue.value
+                var jsonObj = csvJSON(csv)
+                if(jsonObj.length>2)
+                {
+                    for(var k = 0; k<jsonObj.length; k++)
+                    {
+                        var xData = jsonObj[k].xData
+                        var yData = jsonObj[k].yData
+
+                        if(!DateFormat)
+                            xData = +xData
+
+                            GraphData.push(
+                                {
+                                xData: xData, yData: yData
+                                }
+                            )
+                            FinishedData.push(
+                                {
+                                xData: xData, yData: yData
+                                }
+                            ) //---attach to finishedElem----
+                    }
+                }
+                else
+                {
+                    validDataSpan.innerHTML = "***CSV format error***"
+                    validDataSpan.style.color = "red"
+
+                }
+
+            }
+
+            buildDrawGraph(title, xAxisName, yAxisName, scale, stroke, strokeWidth, fill, fillOpacity, GraphData, DateFormat)
+
+        }
+
+
+
+}
+
+function showDrawGraphStrokeBg()
+{
+    
+    var stroke = drawGraphStrokeSelect.options[drawGraphStrokeSelect.selectedIndex].value
+    if(stroke!="none")
+        drawGraphStrokeBg.style.backgroundColor = stroke
+    if(domGraphG)
+    {
+
+            document.getElementById('curvePath').setAttribute("stroke", stroke)
+        showPublishSVG()
+    }
+}
+
+function showDrawGraphFillBg()
+{
+    
+    var fill = drawGraphFillSelect.options[drawGraphFillSelect.selectedIndex].value
+    if(fill!="none")
+        drawGraphFillBg.style.backgroundColor = fill
+        else
+            drawGraphFillBg.style.backgroundColor = ""
+        if(domGraphG)
+        {
+
+                document.getElementById('areaCurve').setAttribute("fill", fill)
+            showPublishSVG()
+        }
+
+}
+
+function drawGraphFillSelected()
+{
+    
+    var fill = drawGraphFillSelect.options[drawGraphFillSelect.selectedIndex].value
+    if( document.getElementById('areaCurve'))
+    {
+
+            document.getElementById('areaCurve').setAttribute("fill", fill)
+            showPublishSVG()
+
+    }
+
+}
+
+function drawGraphOpacitySelected()
+{
+    
+    var opacity = drawGraphOpacitySelect.options[drawGraphOpacitySelect.selectedIndex].text
+        if( document.getElementById('areaCurve'))
+        {
+             areaCurve.setAttribute("fill-opacity", opacity)
+            showPublishSVG()
+        }
+
+
+}
+
+function drawGraphStrokeWidthSelected()
+{
+    
+    var strokeWidth = drawGraphStrokeWidthSelect.options[drawGraphStrokeWidthSelect.selectedIndex].text
+        if( document.getElementById('curvePath'))
+        {
+             document.getElementById('curvePath').setAttribute("stroke-width", strokeWidth)
+             showPublishSVG()
+
+        }
+
+
+
+}
+function buildDrawGraph(title, xAxisName, yAxisName, scale, stroke, strokeWidth, fill, fillOpacity, data, dateFormat)
+{
+    var nativeWidth = 560
+    var nativeHeight =400
+
+    //---container for all axis---
+    var graphG = d3.select("#mySVG").append("g")
+    .attr("id", "domGraphG")
+    .attr("shape-rendering", "geometricPrecision")
+    .attr("transform","translate(60,40)")
+
+    // set the ranges
+
+    var yScale = d3.scaleLinear().range([nativeHeight, 0]);
+
+    if(DateFormat)
+    {
+        //var parseTime = d3.timeParse("%m/%d/%Y %H:%M")
+
+        var xScale = d3.scaleTime().range([0, nativeWidth]);
+        data.forEach(function(d, i)
+            {
+                d.xData = ParseTime(d.xData);
+            }
+        );
+        xScale.domain(d3.extent
+            (data, function(d)
+                {
+                    return d.xData;
+                }
+            )
+        );
+    }
+    else
+    {
+        var xScale = d3.scaleLinear()
+        .range([0, nativeWidth]) //---added .5 to assure tick visibility--
+        .domain(d3.extent
+            (data, function(d)
+                {
+                    return d.xData;
+                }
+            )
+        )
+
+    }
+
+    // Scale the range of the data
+
+    yScale.domain(
+        [0, d3.max
+            (data, function(d)
+                {
+                    return d.yData;
+                }
+            )
+        ]
+    );
+
+    // Add the X Axis
+    if(DateFormat)
+    {
+        var xTickFormat = DateFormat
+        var textAnchor = "end"
+        var rotate = -30
+        var dx = "-.8em"
+    }
+    else
+    {
+        var xTickFormat = null
+
+    }
+
+    var xAxisText = graphG.append("g")
+    .attr("transform", "translate(0," + nativeHeight + ")")
+    .call(d3.axisBottom(xScale)
+        .tickFormat(xTickFormat)
+    )
+    if(DateFormat)
+        xAxisText.selectAll("text")
+        .attr("stroke-width", ".1")
+        .attr("stroke", "black")
+        .attr("font-size", "13")
+        .attr("text-anchor", textAnchor)
+        .attr("dx", dx)
+        .attr("dy", ".15em")
+        .attr("transform", "rotate("+rotate+")");
+
+    // Add the Y Axis
+    graphG.append("g")
+    .attr("font-size", "14")
+    .call(d3.axisLeft(yScale));
+    
+
+
+        //======================fill under curve===============
+        var curveArea = d3.area() //---used to provide a fill color for the path---
+        .x(function(d)
+            {
+                return xScale(d.xData);
+            }
+        )
+        .y0(nativeHeight)
+        .y1(function(d)
+            {
+                return yScale(d.yData);
+            }
+        )
+        .curve(d3.curveMonotoneX) // apply smoothing to the line
+
+        var curveLine = d3.line()
+        .x(function(d)
+            {
+                return xScale(d.xData);
+            }
+        )
+        .y(function(d)
+            {
+                return yScale(d.yData);
+            }
+        )
+        .curve(d3.curveMonotoneX) // apply smoothing to the line
+
+        //---draw paths---
+        var areaCurve = graphG.append("path")
+        .datum(data)
+        .attr("id", "areaCurve")
+        .attr("stroke", "none")
+        .attr("fill", fill)
+        .attr("fill-opacity", fillOpacity)
+        .attr("d", curveArea)
+
+        var curvePath = graphG.append("path")
+        .datum(data)
+        .attr("id", "curvePath")
+        .attr("stroke", stroke)
+        .attr("stroke-width", strokeWidth)
+        .attr("fill", "none")
+        .attr("d", curveLine)
+
+
+
+    graphG.append("text")
+    .attr("id", "yAxisText")
+    .attr("transform", "translate(-60 150)rotate(-90)")
+    .attr("font-family", "arial")
+    .attr("font-size", "16px")
+    .attr("fill", "black")
+    .attr("font-family", "arial")
+    .attr("y", 6)
+    .attr("dy", ".71em")
+    .style("text-anchor", "middle")
+    .style("stroke", "none")
+    .attr("font-weight", "bold")
+    .text(yAxisName);
+
+    if(DateFormat)
+        var xNameOffsetY = 500
+        else
+            var xNameOffsetY = 440
+
+            graphG.append("text")
+            .attr("id", "xAxisName")
+            .attr("pointer-events", "none")
+            .attr("font-family", "arial")
+            .attr("font-size", "16px")
+            .attr("font-weight", "bold")
+            .attr("fill", "black")
+            .attr("font-family", "arial")
+            .attr("x", nativeWidth/2)
+            .style("text-anchor", "middle")
+            .style("stroke", "none")
+            .text(xAxisName)
+            .attr("y", xNameOffsetY)
+
+            graphG.append("text")
+            .attr("id", "graphTitle")
+            .attr("pointer-events", "none")
+            .attr("font-family", "arial")
+            .attr("font-size", "16px")
+            .attr("font-weight", "bold")
+            .attr("fill", "black")
+            .attr("font-family", "arial")
+            .attr("x", nativeWidth/2)
+            .style("text-anchor", "middle")
+            .style("stroke", "none")
+            .text(title)
+            .attr("y", -10)
+
+            // gridlines in x axis function
+            function make_x_gridlines()
+            {
+                return d3.axisBottom(xScale)
+
+            }
+
+            // gridlines in y axis function
+            function make_y_gridlines()
+            {
+                return d3.axisLeft(yScale)
+            }
+
+            // add the X gridlines
+            graphG.append("g")
+            .attr("stroke", "lightgrey")
+            .attr("stroke-width", "1")
+            .attr("stroke-opacity", ".4")
+            .attr("shape-rendering", "crispEdges")
+
+            .attr("transform", "translate(0," + nativeHeight + ")")
+            .call(make_x_gridlines()
+                .tickSize(-nativeHeight)
+                .tickFormat("")
+            )
+
+            // add the Y gridlines
+            graphG.append("g")
+            .attr("stroke", "lightgrey")
+            .attr("stroke-width", "1")
+            .attr("shape-rendering", "crispEdges")
+            .attr("stroke-opacity", ".4")
+
+            .call(make_y_gridlines()
+                .tickSize(-nativeWidth)
+                .tickFormat("")
+            )
+
+            //----add covering rect--------
+            graphG.append("rect")
+            .attr("width", nativeWidth)
+            .attr("height", nativeHeight)
+            .attr("fill", "white")
+            .attr("fill-opacity", "0")
+            .attr("cursor", "default")
+
+
+        graphG.attr("scale",scale)
+      showPublishSVG()
+}
+
+
+
+function saveSvgAsFile() {
+
+    if (inputFileNameToSaveAs.value != "") {
+
+
+        var textToSave = svgPublishDiv.innerText.replace(/\\n/g, "")
+        textToSave.replace(/\&/g, "&amp;")
+
+
+        var textToSaveAsBlob = new Blob([textToSave], {
+            type: "text/xml"
+        });
+        var textToSaveAsURL = window.URL.createObjectURL(textToSaveAsBlob);
+        var fileNameToSaveAs = document.getElementById("inputFileNameToSaveAs").value;
+        if (fileNameToSaveAs.indexOf(".svg") == -1)
+            fileNameToSaveAs += ".svg"
+        var downloadLink = document.createElement("a");
+        downloadLink.download = fileNameToSaveAs;
+        downloadLink.innerHTML = "Download File";
+        downloadLink.href = textToSaveAsURL;
+        downloadLink.onclick = destroyClickedElement;
+        downloadLink.style.display = "none";
+        document.body.appendChild(downloadLink);
+
+        downloadLink.click();
+    }
+}
+
+function destroyClickedElement(event) {
+    document.body.removeChild(event.target);
+}
+
+function writeEM() {
+    var em = "Contact: "
+    em += "fhem"
+    em += "sher"
+    em += "@"
+    em += "gm"
+    em += "ail."
+    em += "com"
+    emDiv.innerHTML = em + " &nbsp;&nbsp;<span style=color:maroon>Last Update: 8/07/2018</span>"
+
+}
+var clrArray=[]
+clrArray[0]=["none","none","none"]
+clrArray[1]=["IndianRed","#CD5C5C","RGB(205, 92, 92)"]
+clrArray[2]=["LightCoral","#F08080","RGB(240, 128, 128)"]
+clrArray[3]=["Salmon","#FA8072","RGB(250, 128, 114)"]
+clrArray[4]=["DarkSalmon","#E9967A","RGB(233, 150, 122)"]
+clrArray[5]=["LightSalmon","#FFA07A","RGB(255, 160, 122)"]
+clrArray[6]=["Crimson","#DC143C","RGB(220, 20, 60)"]
+clrArray[7]=["Red","#FF0000","RGB(255, 0, 0)"]
+clrArray[8]=["FireBrick","#B22222","RGB(178, 34, 34)"]
+clrArray[9]=["DarkRed","#8B0000","RGB(139, 0, 0)"]
+clrArray[10]=["Pink","#FFC0CB","RGB(255, 192, 203)"]
+clrArray[11]=["LightPink","#FFB6C1","RGB(255, 182, 193)"]
+clrArray[12]=["HotPink","#FF69B4","RGB(255, 105, 180)"]
+clrArray[13]=["DeepPink","#FF1493","RGB(255, 20, 147)"]
+clrArray[14]=["MediumVioletRed","#C71585","RGB(199, 21, 133)"]
+clrArray[15]=["PaleVioletRed","#DB7093","RGB(219, 112, 147)"]
+clrArray[16]=["LightSalmon","#FFA07A","RGB(255, 160, 122)"]
+clrArray[17]=["Coral","#FF7F50","RGB(255, 127, 80)"]
+clrArray[18]=["Tomato","#FF6347","RGB(255, 99, 71)"]
+clrArray[19]=["OrangeRed","#FF4500","RGB(255, 69, 0)"]
+clrArray[20]=["DarkOrange","#FF8C00","RGB(255, 140, 0)"]
+clrArray[21]=["Orange","#FFA500","RGB(255, 165, 0)"]
+clrArray[22]=["Gold","#FFD700","RGB(255, 215, 0)"]
+clrArray[23]=["Yellow","#FFFF00","RGB(255, 255, 0)"]
+clrArray[24]=["LightYellow","#FFFFE0","RGB(255, 255, 224)"]
+clrArray[25]=["LemonChiffon","#FFFACD","RGB(255, 250, 205)"]
+clrArray[26]=["LightGoldenrodYellow","#FAFAD2","RGB(250, 250, 210)"]
+clrArray[27]=["PapayaWhip","#FFEFD5","RGB(255, 239, 213)"]
+clrArray[28]=["Moccasin","#FFE4B5","RGB(255, 228, 181)"]
+clrArray[29]=["PeachPuff","#FFDAB9","RGB(255, 218, 185)"]
+clrArray[30]=["PaleGoldenrod","#EEE8AA","RGB(238, 232, 170)"]
+clrArray[31]=["Khaki","#F0E68C","RGB(240, 230, 140)"]
+clrArray[32]=["DarkKhaki","#BDB76B","RGB(189, 183, 107)"]
+clrArray[33]=["Lavender","#E6E6FA","RGB(230, 230, 250)"]
+clrArray[34]=["Thistle","#D8BFD8","RGB(216, 191, 216)"]
+clrArray[35]=["Plum","#DDA0DD","RGB(221, 160, 221)"]
+clrArray[36]=["Violet","#EE82EE","RGB(238, 130, 238)"]
+clrArray[37]=["Orchid","#DA70D6","RGB(218, 112, 214)"]
+clrArray[38]=["Fuschia","#FF00FF","RGB(255, 0, 255)"]
+clrArray[39]=["Magenta","#FF00FF","RGB(255, 0, 255)"]
+clrArray[40]=["MediumOrchid","#BA55D3","RGB(186, 85, 211)"]
+clrArray[41]=["MediumPurple","#9370DB","RGB(147, 112, 219)"]
+clrArray[42]=["RebeccaPurple","#663399","RGB(102, 51, 153)"]
+clrArray[43]=["BlueViolet","#8A2BE2","RGB(138, 43, 226)"]
+clrArray[44]=["DarkViolet","#9400D3","RGB(148, 0, 211)"]
+clrArray[45]=["DarkOrchid","#9932CC","RGB(153, 50, 204)"]
+clrArray[46]=["DarkMagenta","#8B008B","RGB(139, 0, 139)"]
+clrArray[47]=["Purple","#800080","RGB(128, 0, 128)"]
+clrArray[48]=["Indigo","#4B0082","RGB(75, 0, 130)"]
+clrArray[49]=["SlateBlue","#6A5ACD","RGB(106, 90, 205)"]
+clrArray[50]=["DarkSlateBlue","#483D8B","RGB(72, 61, 139)"]
+clrArray[51]=["MediumSlateBlue","#7B68EE","RGB(123, 104, 238)"]
+clrArray[52]=["GrennYellow","#ADFF2F","RGB(173, 255, 47)"]
+clrArray[53]=["Chartreuse","#7FFF00","RGB(127, 255, 0)"]
+clrArray[54]=["LawnGreen","#7CFC00","RGB(124, 252, 0)"]
+clrArray[55]=["Lime","#00FF00","RGB(0, 255, 0)"]
+clrArray[56]=["LimeGreen","#32CD32","RGB(50, 205, 50)"]
+clrArray[57]=["PaleGreen","#98FB98","RGB(152, 251, 152)"]
+clrArray[58]=["LightGreen","#90EE90","RGB(144, 238, 144)"]
+clrArray[59]=["MediumSpringGreen","#00FA9A","RGB(0, 250, 154)"]
+clrArray[60]=["SpringGreen","#00FF7F","RGB(0, 255, 127)"]
+clrArray[61]=["MediumSeaGreen","#3CB371","RGB(60, 179, 113)"]
+clrArray[62]=["SeaGreen","#2E8B57","RGB(46, 139, 87)"]
+clrArray[63]=["ForestGreen","#228B22","RGB(34, 139, 34)"]
+clrArray[64]=["Green","#008000","RGB(0, 128, 0)"]
+clrArray[65]=["DarkGreen","#006400","RGB(0, 100, 0)"]
+clrArray[66]=["YellowGreen","#9ACD32","RGB(154, 205, 50)"]
+clrArray[67]=["OliveDrab","#6B8E23","RGB(107, 142, 35)"]
+clrArray[68]=["Olive","#808000","RGB(128, 128, 0)"]
+clrArray[69]=["DarkOliveGreen","#556B2F","RGB(85, 107, 47)"]
+clrArray[70]=["MediumAquamarine","#66CDAA","RGB(102, 205, 170)"]
+clrArray[71]=["DarkSeaGreen","#8FBC8B","RGB(143, 188, 139)"]
+clrArray[72]=["LightSeaGreen","#20B2AA","RGB(32, 178, 170)"]
+clrArray[73]=["DarkCyan","#008B8B","RGB(0, 139, 139)"]
+clrArray[74]=["Teal","#008080","RGB(0, 128, 128)"]
+clrArray[75]=["Aqua","#00FFFF","RGB(0, 255, 255)"]
+clrArray[76]=["Cyan","#00FFFF","RGB(0, 255, 255)"]
+clrArray[77]=["LightCyan","#E0FFFF","RGB(224, 255, 255)"]
+clrArray[78]=["PaleTurquoise","#AFEEEE","RGB(175, 238, 238)"]
+clrArray[79]=["Aquamarine","#7FFFD4","RGB(127, 255, 212)"]
+clrArray[80]=["Turquoise","#40E0D0","RGB(64, 224, 208)"]
+clrArray[81]=["MediumTurquoise","#48D1CC","RGB(72, 209, 204)"]
+clrArray[82]=["DarkTurquoise","#00CED1","RGB(0, 206, 209)"]
+clrArray[83]=["CadetBlue","#5F9EA0","RGB(95, 158, 160)"]
+clrArray[84]=["SteelBlue","#4682B4","RGB(70, 130, 180)"]
+clrArray[85]=["LightSteelBlue","#B0C4DE","RGB(176, 196, 222)"]
+clrArray[86]=["PowderBlue","#B0E0E6","RGB(176, 224, 230)"]
+clrArray[87]=["LightBlue","#ADD8E6","RGB(173, 216, 230)"]
+clrArray[88]=["SkyBlue","#87CEEB","RGB(135, 206, 235)"]
+clrArray[89]=["LightSkyBlue","#87CEFA","RGB(135, 206, 250)"]
+clrArray[90]=["DeepSkyBlue","#00BFFF","RGB(0, 191, 255)"]
+clrArray[91]=["DodgerBlue","#1E90FF","RGB(30, 144, 255)"]
+clrArray[92]=["CornFlowerBlue","#6495ED","RGB(100, 149, 237)"]
+clrArray[93]=["MediumSlateBlue","#7B68EE","RGB(123, 104, 238)"]
+clrArray[94]=["RoyalBlue","#4169E1","RGB(65, 105, 225)"]
+clrArray[95]=["Blue","#0000FF","RGB(0, 0, 255)"]
+clrArray[96]=["MediumBlue","#0000CD","RGB(0, 0, 205)"]
+clrArray[97]=["DarkBlue","#00008B","RGB(0, 0, 139)"]
+clrArray[98]=["NAVY","#000080","RGB(0, 0, 128)"]
+clrArray[99]=["MidnightBlue","#191970","RGB(25, 25, 112)"]
+clrArray[100]=["Cornsilk","#FFF8DC","RGB(255, 248, 220)"]
+clrArray[101]=["BlanchedAlmond","#FFEBCD","RGB(255, 235, 205)"]
+clrArray[102]=["Bisque","#FFE4C4","RGB(255, 228, 196)"]
+clrArray[103]=["NavajoWhite","#FFDEAD","RGB(255, 222, 173)"]
+clrArray[104]=["Wheat","#F5DEB3","RGB(245, 222, 179)"]
+clrArray[105]=["Burlywood","#DEB887","RGB(222, 184, 135)"]
+clrArray[106]=["Tan","#D2B48C","RGB(210, 180, 140)"]
+clrArray[107]=["RosyBrown","#BC8F8F","RGB(188, 143, 143)"]
+clrArray[108]=["SandyBrown","#F4A460","RGB(244, 164, 96)"]
+clrArray[109]=["Goldenrod","#DAA520","RGB(218, 165, 32)"]
+clrArray[110]=["DarkGoldenrod","#B8860B","RGB(184, 134, 11)"]
+clrArray[111]=["Peru","#CD853F","RGB(205, 133, 63)"]
+clrArray[112]=["Chocolate","#D2691E","RGB(210, 105, 30)"]
+clrArray[113]=["SaddleBrown","#8B4513","RGB(139, 69, 19)"]
+clrArray[114]=["Sienna","#A0522D","RGB(160, 82, 45)"]
+clrArray[115]=["Brown","#A52A2A","RGB(165, 42, 42)"]
+clrArray[116]=["Maroon","#800000","RGB(128, 0, 0)"]
+clrArray[117]=["White","#FFFFFF","RGB(255, 255, 255)"]
+clrArray[118]=["Snow","#FFFAFA","RGB(255, 250, 250)"]
+clrArray[119]=["Honeydew","#F0FFF0","RGB(240, 255, 240)"]
+clrArray[120]=["MintCream","#F5FFFA","RGB(245, 255, 250)"]
+clrArray[121]=["Azur","#F0FFFF","RGB(240, 255, 255)"]
+clrArray[122]=["AliceBlue","#F0F8FF","RGB(240, 248, 255)"]
+clrArray[123]=["GhostWhite","#F8F8FF","RGB(248, 248, 255)"]
+clrArray[124]=["WhiteSmoke","#F5F5F5","RGB(245, 245, 245)"]
+clrArray[125]=["Seashell","#FFF5EE","RGB(255, 245, 238)"]
+clrArray[126]=["Beige","#F5F5DC","RGB(245, 245, 220)"]
+clrArray[127]=["OldLace","#FDF5E6","RGB(253, 245, 230)"]
+clrArray[128]=["FloralWhite","#FFFAF0","RGB(255, 250, 240)"]
+clrArray[129]=["Ivory","#FFFFF0","RGB(255, 255, 240)"]
+clrArray[130]=["AntiqueWhite","#FAEBD7","RGB(250, 235, 215)"]
+clrArray[131]=["Linen","#FAF0E6","RGB(250, 240, 230)"]
+clrArray[132]=["LavenderBlush","#FFF0F5","RGB(255, 240, 245)"]
+clrArray[133]=["MistyRose","#FFE4E1","RGB(255, 228, 225)"]
+clrArray[134]=["Gainsboro","#DCDCDC","RGB(220, 220, 220)"]
+clrArray[135]=["LightGray","#D3D3D3","RGB(211, 211, 211)"]
+clrArray[136]=["Silver","#C0C0C0","RGB(192, 192, 192)"]
+clrArray[137]=["DarkGray","#A9A9A9","RGB(169, 169, 169)"]
+clrArray[138]=["Gray","#808080","RGB(128, 128, 128)"]
+clrArray[139]=["DimGray","#696969","RGB(105, 105, 105)"]
+clrArray[140]=["LightSlatGray","#778899","RGB(119, 136, 153)"]
+clrArray[141]=["SlateGray","#708090","RGB(112, 128, 144)"]
+clrArray[142]=["DarkSlateGray","#2F4F4F","RGB(47, 79, 79)"]
+clrArray[143]=["Black","#000000","RGB(0,0,0)"]
+
+
+
+function writeGraphColorSelection()
+{
+   var DrawColors=clrArray
+    for(var k=0;k<DrawColors.length;k++)
+    {
+        var name=DrawColors[k][0]
+        var myColor=DrawColors[k][1]
+
+
+
+        var option=document.createElement("OPTION")
+        option.style.backgroundColor=myColor
+        option.value=myColor
+        option.title=name+" "+myColor
+
+        option.text=k
+        drawGraphStrokeSelect.appendChild(option)
+
+       	var option=document.createElement("OPTION")
+        option.style.backgroundColor=myColor
+        option.value=myColor
+        option.title=name+" "+myColor
+        option.text=k
+
+
+        var option=document.createElement("OPTION")
+        option.style.backgroundColor=myColor
+        option.value=myColor
+        option.title=name+" "+myColor
+
+        option.text=k
+        drawGraphFillSelect.appendChild(option)
+
+
+
+
+    }
+    drawGraphStrokeSelect.selectedIndex=44
+    var clr=drawGraphStrokeSelect.options[drawGraphStrokeSelect.selectedIndex].value
+    drawGraphStrokeBg.style.backgroundColor=clr
+}
+
+
+function createData()
+{
+   var data='['
+
+   for(k=0;k<50;k++)
+   {
+     var yrand=50 *Math.random().toFixed(2)
+      data+="{xData:"+k+",yData:"+yrand+"},"
+
+
+
+   }
+
+     data+="]"
+
+      myValue.value=data
+
+
+
+}
+
+
+</script>
+</body>
+
+</html>
