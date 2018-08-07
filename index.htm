@@ -9,7 +9,7 @@
     <link href='highlight.css' rel='stylesheet' />
 </head>
 
-<body style=font-family:arial; onload=writeEM();writeGraphColorSelection()>
+<body style=font-family:arial; onload=writeEM();writeGraphColorSelection();createData()>
     <center>
         <b>Place Graph in your Web Page</b>
         <br>
@@ -36,7 +36,7 @@ The X-axis values can be numeric or in a date/time format. If the X-axis is a ti
 
 <tr>
 <td align=left >
-    Title:<input id=drawGraphTitleValue type="text" style=font-weight:bold;width:230px value="My Graph Title" /><br>
+    Title:<input id=drawGraphTitleValue type="text" style=font-weight:bold;width:280px value="My Graph Title" /><br>
     X-axis Name:<input  id=drawGraphXaxisValue type="text" style=width:80px  value="X Axis Name"  /><br>
     Y-axis Name:<input  id=drawGraphYaxisValue type="text" style=width:80px value="Y Axis Name"  />
 
@@ -140,7 +140,7 @@ X-Axis Date Format:<input id=drawGraphTimeFormatCheck onclick=drawGraphTimeForma
                 </TD>
             </TR>
         </TABLE>
-        To publish the pie chart into your web page, copy/paste SVG source below, or save as .svg file<br>
+        To publish the data graph into your web page, copy/paste SVG source below, or save as .svg file<br>
         <div id=svgPublishDiv style=background:lightblue;text-align:left;width:90%;height:200px;overflow-y:scroll></div>
         <table>
             <tr>
@@ -156,6 +156,7 @@ X-Axis Date Format:<input id=drawGraphTimeFormatCheck onclick=drawGraphTimeForma
         <div id=emDiv style='width:100%'></div>
         <p></p>
     </center>
+    <textarea name="" id="myValue" style=width:300px;height:400px></textarea>
 <script>
 var DataType
 function drawGraphCSVButtonClicked()
@@ -388,7 +389,7 @@ function publishGraph()
             var fillOpacity = drawGraphOpacitySelect.options[drawGraphOpacitySelect.selectedIndex].text
             GraphData =[]
             FinishedData =[]
-
+           /*
             drawGraphTitleValue.disabled = true
             drawGraphXaxisValue.disabled = true
             drawGraphYaxisValue.disabled = true
@@ -396,7 +397,7 @@ function publishGraph()
             drawGraphDateFormatSelect.disabled = true
             drawGraphCSVButton.disabled = true
             drawGraphJSONButton.disabled = true
-
+           */
 
 
             if(DataType=="JSON")
@@ -551,13 +552,13 @@ function drawGraphStrokeWidthSelected()
 function buildDrawGraph(title, xAxisName, yAxisName, scale, stroke, strokeWidth, fill, fillOpacity, data, dateFormat)
 {
     var nativeWidth = 560
-    var nativeHeight =400
+    var nativeHeight =360
 
     //---container for all axis---
     var graphG = d3.select("#mySVG").append("g")
     .attr("id", "domGraphG")
     .attr("shape-rendering", "geometricPrecision")
-    .attr("transform","translate(60,40)")
+    .attr("transform","translate(120,40)")
 
     // set the ranges
 
@@ -705,9 +706,9 @@ function buildDrawGraph(title, xAxisName, yAxisName, scale, stroke, strokeWidth,
     .text(yAxisName);
 
     if(DateFormat)
-        var xNameOffsetY = 500
+        var xNameOffsetY = 450
         else
-            var xNameOffsetY = 440
+            var xNameOffsetY = 400
 
             graphG.append("text")
             .attr("id", "xAxisName")
@@ -727,7 +728,7 @@ function buildDrawGraph(title, xAxisName, yAxisName, scale, stroke, strokeWidth,
             .attr("id", "graphTitle")
             .attr("pointer-events", "none")
             .attr("font-family", "arial")
-            .attr("font-size", "16px")
+            .attr("font-size", "20px")
             .attr("font-weight", "bold")
             .attr("fill", "black")
             .attr("font-family", "arial")
@@ -1030,8 +1031,17 @@ function createData()
 
    for(k=0;k<50;k++)
    {
+
+      if(k<10)
+        var sec="0"+k
+      else
+        var sec=k
+
+        var time="08/07/2018 07:04:"+sec
+
+
      var yrand=50 *Math.random().toFixed(2)
-      data+="{xData:"+k+",yData:"+yrand+"},"
+      data+="{xData:'"+k+"',yData:"+yrand+"},"
 
 
 

@@ -43,11 +43,11 @@ function showPublishSVG()
 
 
     publishSVG.setAttribute("id", "graphSVG")
-    publishSVG.setAttribute("width", bbw+5)
+    publishSVG.setAttribute("width", bbw+10)
     publishSVG.setAttribute("height", bbh)
     var clone=domGraphG.cloneNode(true)
 
-    clone.setAttribute("transform","scale("+scale+")translate(60,40)")
+    clone.setAttribute("transform","scale("+scale+")translate(120,40)")
 
     publishSVG.appendChild(clone)
 
